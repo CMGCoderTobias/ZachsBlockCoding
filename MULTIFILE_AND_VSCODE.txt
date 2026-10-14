@@ -1,0 +1,89 @@
+Multiple files and live VS Code - October 13, 2026
+=================================================
+
+Start the rebuilt app
+From D:\Reborn Entertainment\Reborn\Coding\ZachsBlockCoding run npm start.
+Close an older running copy first. The production bundle was rebuilt here.
+
+Folders and tabs
+- Open Folder chooses a project root. Expand directories and click any file.
+- JS, MJS, CJS and JSX have blocks. Other UTF-8 text files open as text only.
+- Open JS, New JS and Example now open tabs instead of replacing your buffer.
+- Each tab keeps unsaved text, undo/redo, layout and inspector drafts in memory.
+- Textareas use LF internally; unchanged disk text keeps its original BOM and
+  line endings, and edits preserve the unchanged prefix/suffix from the raw file.
+- Close with the x. Local drafts require confirmation; closing the app checks
+  inactive tabs too. Tabs/drafts are NOT restored after a crash or app restart.
+- Only the active disk file is watched. Inactive files are checked on activation;
+  saving also checks the accepted disk hash. Conflicts never silently merge.
+- The current limits are 20 tabs and 1 MB per file. Binary files are rejected.
+- Directory loading is lazy, not a recursive project scan. node_modules, .git,
+  .zbc-runtime and symlink entries are omitted. Listings cap at 2,000 entries per
+  folder; select a smaller root if needed. Refresh reloads the folder listing.
+- Save As will not overwrite another open tab's file. Choose a new path or close
+  that tab after preserving its edits. Saving still keeps one recovery backup.
+
+Install the OPTIONAL VS Code connector
+The local installable package is:
+releases\zachsblockcoding-connector-0.1.0.vsix
+In VS Code use Extensions: Install from VSIX and select that file.
+No marketplace publication, npm install, account or cloud connection is needed.
+The validation install was in a separate D: test profile, NOT your usual profile.
+
+Connect to your live VS Code window
+1. In ZachsBlockCoding click Connect VS Code. The app copies a pairing code.
+2. In VS Code open a trusted LOCAL workspace. Run the command:
+   ZachsBlockCoding: Connect to Standalone App
+3. Paste the code. Select an open JavaScript/JSX file. Its unsaved text appears
+   in a [VS Code] tab in the app. Switching active JavaScript editors shares
+   those too, without scanning the workspace or sending other file contents.
+4. Click Blocks only to hide the standalone code preview AND source inspector.
+   Click Show code preview to restore them. While linked, the code pane is a
+   read-only preview: type in VS Code; edit block fields and connections here.
+5. Block changes update VS Code's unsaved buffer. Save asks VS Code to save.
+   VS Code undo/redo and manual edits flow back into blocks. Invalid/incomplete
+   text uses the existing warning fallback. Renaming fields is NOT refactoring.
+6. Click Disconnect (either application) to end the session. Text is retained;
+   the app restores standalone typing. Save As creates a standalone copy.
+
+Conflicts and limitations
+- VS Code owns linked document versions. Each outgoing block edit states its
+  base version. Stale edits are rejected, not forced onto newer text.
+- If both sides change, the app keeps its local draft and latest VS Code version.
+  Reload from VS Code accepts the latter after confirmation; Save As preserves
+  the local draft separately. Do not treat a failed/timed-out send as success.
+- A disk tab and a [VS Code] tab for the same path are separate views. Prefer the
+  connected tab while paired. Disk-save conflict checks still apply to the other.
+- Local VS Code only: no WSL/SSH/Codespaces or Visual Studio adapter yet.
+- The connector uses VS Code's editor/undo/save features; it does not transfer
+  VS Code extensions, debugging sessions or language-server internals into Electron.
+- No automatic edits are executed as programs. Run remains the existing manual
+  browser-JS worker feature, not a VS Code terminal or Node runtime.
+
+Security and resource use
+Pairing is explicit, loopback-only (127.0.0.1) and authenticated with a random
+256-bit credential. Unused pairing expires after ten minutes. Disconnect closes
+the socket/server; the credential is never written to a config file. Clipboard
+contents remain under your control: do not share the pairing code publicly.
+The connection accepts only shared document edits, save and focus requests.
+It does not expose shell commands or arbitrary filesystem access. Frame/source
+sizes and open documents are bounded. Snapshots are debounced; block edits are
+sent as a minimal contiguous text change. The JS parser still reparses the active
+file; this is not a fully incremental parser or multi-user collaboration system.
+
+Develop/build the connector
+npm run package:connector rebuilds the small VSIX using Node built-ins only.
+vscode-extension contains the source, isolated from the core block editor.
+Future Visual Studio/other-editor adapters can implement the same protocol.
+See EDITOR_INTEGRATION_PLAN.txt for that boundary and future work.
+
+Stable API references used for the connector:
+https://code.visualstudio.com/api/references/vscode-api
+https://code.visualstudio.com/api/references/extension-manifest
+
+Verification on October 13
+20 regression tests and 59 Electron interaction checks passed; the installed
+VS Code 1.141.0 extension host passed 10 integration checks in a D: test profile.
+The local VSIX was accepted by VS Code's installer. The VS Code CLI itself
+emitted a url.parse deprecation warning during the test install; this connector
+does not call that API or add any third-party runtime dependencies.

@@ -1,0 +1,40 @@
+Visual layout and VS Code ownership
+==================================
+Independent top-level blocks keep their source order regardless of screen position.
+Moving a variable below a function on screen does NOT move its declaration in code.
+Connecting or disconnecting blocks is a structural edit and CAN change source order.
+New unconnected templates append to source; screen coordinates do not choose a line.
+
+After rendering, measured block trees are checked for collisions. Overlapping trees
+are pushed downward with a gap. Nested blocks stay attached. Layout is not code.
+This is a simple collision pass, not an optimized large-project layout engine.
+
+VS Code connections now default to blocks-only. Show code preview is optional.
+Active editor changes and unsaved typing are sent automatically; Share is a manual
+resend command, not required for normal use. Unsupported active editors show a
+warning and hide the previous block view instead of pretending it is current.
+Loading yields to the UI before parsing/rendering so its status can paint.
+
+Connected blocks send version-checked text edits to VS Code's live document.
+VS Code owns Undo and disk Save for those edits. The app does not independently
+read/write that file. Standalone file operations pause until disconnect; existing
+standalone drafts remain in their tabs. For a separate copy, disconnect first.
+Concurrent block drafts and VS Code changes remain conflicts, not silent merges.
+
+Restart the standalone app and reinstall the rebuilt connector VSIX, then reload
+the VS Code window and reconnect. Existing installed extensions are not overwritten
+by merely rebuilding the package in this project.
+
+Editable expression details
+===========================
+Field extraction now descends into expressions that cross a nested body or span
+multiple lines, exposing callback parameters, nested calls and literal values
+instead of leaving the entire header as an immutable label.
+Function headers have sync/async selectors; direct expression calls have an await
+selector. Invalid combinations still produce preserved-source warning blocks:
+these controls do not automatically make enclosing functions async.
+Call fields have a suggestions dropdown and remain freely typeable. Suggestions
+come from names/calls represented in the current file (up to 100), not a complete
+scope-aware or project-wide language service. Renaming is not refactoring.
+String fields currently edit the literal including quotes, not an auto-escaping
+plain-text widget. Complex multiline literals still use the source editor/inspector.

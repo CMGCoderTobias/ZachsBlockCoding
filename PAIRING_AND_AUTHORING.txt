@@ -1,0 +1,89 @@
+Remembered pairing and block authoring - October 13, 2026
+=======================================================
+
+Install releases/zachsblockcoding-connector-0.2.0.vsix in VS Code, reload the
+VS Code window, restart this app, and pair once using Connect VS Code.
+The old connector uses the previous handshake and must be updated.
+
+After successful pairing, open both apps and the paired VS Code workspace:
+they reconnect without another code. The extension activates after startup
+and retries after 1, 2, 4, 8, 16, then at most every 30 seconds if the app is
+unavailable. There is no project scan, background daemon or cloud account.
+Only one VS Code window connects at once. Empty windows share an empty-window
+pairing; multiple such windows can compete, so disconnect the unwanted one.
+Pairing does not launch either application for you.
+
+The app stores one OS-encrypted credential file under
+.zbc-runtime/userData/editor-pairing.bin (on D: here). VS Code stores its side
+in its own encrypted SecretStorage, keyed to the paired workspace. This is a
+small credential, not your source code. VS Code controls its own profile path;
+we do not change your normal profile. Secret storage is not a defense against
+malware running as your own OS user. Never share pairing codes publicly.
+Both endpoints prove knowledge of the secret with fresh challenges before
+document sharing. The token itself is not sent in the new socket handshake.
+Only loopback connections are accepted. Unknown or changed identity stops sync.
+If secure storage is unavailable, use a session-only manual pairing; no plaintext
+fallback is saved. If the saved port is occupied, resolve that conflict or forget
+and pair again rather than sending documents to an unverified process.
+
+Disconnect pauses the connection. Reopen the apps or use Connect to resume.
+Forget pairing in this app revokes its credential and stops listening. Also run
+ZachsBlockCoding: Forget Pairing in VS Code to delete its copy and stop retries.
+Pair again after changing devices; encrypted credentials are not portable.
+
+Selection-only helpers
+----------------------
+process.chdir was already recognized; it is the full callable, not just chdir.
+The former choose-function menu was an extra action, not a missing function.
+The source call stays visible. Select a block to reveal Change function and
+async/await controls. An active async/await keyword remains visible when the
+block is not selected. Moving blocks still does not reorder independent source.
+
+Long fields wrap into paragraph-like SVG lines. Labels no longer discard text
+after 110 characters, and editable values no longer use Blockly's ellipsis.
+Wrapping only changes display; it does not insert line breaks into strings.
+The edit box still edits the whole field as one value, including string quotes.
+
+Edit list
+---------
+Select a block and click Edit list. Choose the list to edit, then Add item,
+Update or Remove. Available lists include named imports, call arguments,
+function/callback parameters, ordinary arrays and object properties.
+Example named import: readFile as readText. Each row is JavaScript code.
+Commas and necessary parameter parentheses are managed automatically. Existing
+comments and multiline indentation are retained; unrelated code is not formatted.
+Removing the last named import leaves an empty named import so module evaluation
+is preserved. Namespace imports cannot also have named imports in the same
+declaration; change that form in the text editor. Sparse arrays and standalone
+class-method fragments are not yet supported by this list dialog.
+List editing validates the entire resulting document before committing. If code
+changes in VS Code while the dialog is open, reopen the dialog rather than
+overwriting newer code. Connected edits still go through VS Code, not the disk.
+No semantic reference renaming or type checking is implied by these controls.
+
+Expression reference
+--------------------
+Use Expression reference above the blocks and search by name or purpose.
+It contains 24 examples for output, text, arrays, objects, numbers, promises,
+timers, files and paths. Insert example adds code after the selected block, or
+at the file end when none is selected. It never runs the example for you.
+Edit placeholder values/names afterward. Duplicate variable names can require
+renaming. Imports belong at module top level. Node-only examples are clearly
+marked: the current browser Worker runner does not run Node APIs.
+Add entries to src/ui/expressionReference.js to extend the reference locally.
+Community-distributed reference packs and scope-aware suggestions remain future
+work; the new reference is not an exhaustive JavaScript or npm API catalog.
+
+Verification
+------------
+28 regression tests, 75 Electron UI checks, and 11 real VS Code host checks pass.
+The UI checks include import add/remove, hidden helpers, complete wrapped SVG
+text, example insertion and actual OS credential encryption/restore/forget.
+The extension-host checks include automatic reconnect after listener restart.
+Production build and connector 0.2.0 packaging succeeded. Your normal VS Code
+profile was not modified; install the new VSIX yourself and pair once again.
+
+API references checked
+----------------------
+https://www.electronjs.org/docs/latest/api/safe-storage
+https://code.visualstudio.com/api/extension-capabilities/common-capabilities

@@ -1,0 +1,31 @@
+{
+  "name": "zachsblockcoding",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --strictPort",
+    "electron:dev": "node scripts/dev.cjs",
+    "start": "electron .",
+    "build": "vite build",
+    "test": "node --test test/*.test.js",
+    "test:ui": "electron . --smoke-test",
+    "package:connector": "node scripts/package-connector.cjs"
+  },
+  "keywords": [],
+  "author": "Zach",
+  "license": "ISC",
+  "description": "Blockly-based desktop app to generate real code (JS first, then Python).",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^41.6.1",
+    "vite": "^8.0.13",
+    "wait-on": "^9.0.10"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.3",
+    "@zachscodingstream/engine": "^0.0.1",
+    "blockly": "^12.5.1"
+  }
+}

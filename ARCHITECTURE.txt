@@ -1,0 +1,73 @@
+SUPERSEDED: See STATUS_AND_PLAN.txt for the current implementation.
+The following is historical planning and does not describe current behavior.
+
+ZachsBlockCoding – Architecture (draft)
+======================================
+
+Goals
+-----
+- Offline-first desktop app (Electron).
+- “Core” stays stable; functionality grows via packs/plugins.
+- JS is first. As soon as JS runtime is usable, add Python.
+- Long-term: blocks ↔ code (both directions), manual edits, multi-file projects.
+- Primary policy: code is source of truth; blocks are a helper UI.
+
+Core vs Packs
+-------------
+
+Core provides:
+- Project model (files, language, enabled packs, saved block workspace)
+- Pack manager + pack loader (built-in first, community later)
+- Blockly host UI + code preview + run output
+- Generator pipeline entrypoints
+- Safety UX (explicit enable/disable, show versions/sources)
+
+Packs provide:
+- Blocks (types + fields + mutators if needed)
+- Generators (JS now; Python later)
+- Import rules (auto-add imports when blocks are used)
+- Templates/snippets (starter files)
+
+Current Pack System (v1)
+------------------------
+- Built-in packs live under `src/packs/builtin/*`.
+- Core maps ids like `builtin:base-js` to a pack module.
+- Packs contribute toolbox XML and can register custom blocks.
+
+Project Persistence (v1)
+------------------------
+- Stored in localStorage for now:
+  - `enabledPacks`: which packs are active
+  - `workspace`: Blockly serialization JSON
+- Later: save projects to disk (real files + folders).
+
+Runtime (v1)
+------------
+- JS “Run” executes generated code inside a sandboxed iframe and captures logs.
+- This is a developer convenience runner for local use; not a hardened sandbox yet.
+- “Live Sync” writes block output into a bounded region in Manual (optional).
+- Live Sync can operate in sidecar-region mode (no marker comments).
+- “Copy Clean” strips ZBC markers for exporting to other editors/tools.
+
+Blocks ↔ Code Policy (draft)
+----------------------------
+- We support two block classes:
+  1) Structured/generatable blocks (stable constructs; can be parsed from code)
+  2) Raw/user blocks (verbatim code when no converter exists)
+- Code→blocks will be incremental via AST parsing with fallbacks to raw blocks.
+
+Indexing / Analysis (draft)
+---------------------------
+- We reuse the parsing logic from `@zachscodingstream/engine` (published npm package)
+  to avoid reinventing AST walking and to support incremental parsing.
+- In ZBC we store index data under Electron userData (not in node_modules).
+
+Next Milestones
+---------------
+1) Packs UI grows from “built-in toggles” to:
+   - local folder packs
+   - registry list + search
+   - install/enable/disable/update
+2) Project moves from localStorage to disk with multiple files.
+3) Import manager (pack-provided rules; users can override).
+4) Python pack + Python runtime option.

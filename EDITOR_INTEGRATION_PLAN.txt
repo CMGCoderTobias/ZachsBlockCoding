@@ -1,0 +1,63 @@
+Standalone first, optional editor connections - October 13, 2026
+================================================================
+
+Why this is not a VS Code extension
+The parser, block authoring, packs, storage and runtime belong to the standalone
+core. Opening files does not require VS Code or any editor. Editor integrations
+must remain small, optional adapters; removing one cannot disable core editing.
+Visual Studio and VS Code are different applications with different extension
+systems. A VS Code extension cannot simply be loaded into this Electron app.
+
+Implemented live local VS Code adapter
+The local VSIX now pairs with the app using an authenticated loopback transport.
+VS Code shares selected/open JavaScript buffer snapshots with document versions.
+Block changes send minimal text edits against an expected version; stale requests
+are rejected and the draft retained. VS Code applies edits with its own undo/save
+APIs. A blocks-only toggle hides the standalone typing panes while connected.
+Folder browsing and per-file tabs work independently of the adapter.
+See MULTIFILE_AND_VSCODE.txt for exact setup and constraints.
+
+Retained fallback: saved-file interoperability
+1. Open the same ordinary file in each application.
+2. Save explicitly. No marker comments, special source format or remote upload.
+3. This app watches one selected file via a one-second metadata poll. Reads and
+   reparsing happen on change, not continuously over the entire project.
+4. Clean buffer: accept external text and regenerate blocks, including fallback
+   warning blocks if the saved text is incomplete.
+5. Dirty buffer, pending field/drag, or inspector draft: keep local work and show
+   a persistent conflict notice. Never guess a merge. Save As to a different
+   file preserves a separate local copy; Reload explicitly discards local edits.
+6. Each save includes the hash of the disk version actually accepted by the UI.
+   Reading a newer version alone does not grant permission to overwrite it.
+7. Stop watching on file switch, example/reset and application exit. Sidecar
+   layout does not initiate source edits. Missing files leave the buffer intact.
+
+Current boundaries
+Local unsaved-buffer mirroring is implemented for VS Code. No shared terminal/
+debugger or reuse of arbitrary editor extensions inside Electron. Other editors
+still control their own file reload and conflict handling. Hash checking for
+standalone disk tabs is not a cross-editor lock;
+without a cooperating adapter it cannot eliminate every simultaneous-write race.
+The limit is currently 20 tabs, 1 MB per file. No Node-capable runtime or Python yet.
+
+Protocol v1 exists; future integration work
+A. Extend the existing editor-neutral document protocol: document URI, language,
+   base revision/hash, ordered text edits, acknowledgements, diagnostics and
+   capability negotiation. Reject stale edits; avoid event echo loops.
+B. VS Code adapter is implemented; add Visual Studio or other editors separately.
+   They translate native document events, selections and editor commands; they
+   do not duplicate the block engine. Shared unsaved text requires explicit
+   attachment to a document and defined ownership/merge handling.
+C. Current transport is authenticated loopback TCP, opt-in and restricted to
+   shared documents. Consider OS-local pipes and additional hardening later.
+D. Language features through language-server protocols where supported; debug
+   features through debug-adapter protocols when needed. Reuse established
+   servers/adapters where licensing, compatibility and permissions allow, rather
+   than rewriting language support or scraping another editor's internals.
+E. Test reconnects, crash recovery, stale revisions, simultaneous edits, editor
+   version differences and cleanup before calling buffer sync ready.
+
+Avoid premature coupling
+Keep the saved-file route available even when no adapter exists. Package/block
+packs are separate from editor adapters. Do not promise every extension will
+work here. No silent installation of extensions, language servers or packages.

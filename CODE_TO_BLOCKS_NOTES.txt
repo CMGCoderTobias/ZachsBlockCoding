@@ -1,0 +1,83 @@
+SUPERSEDED: The active implementation uses source ranges, not marker comments.
+See START_HERE.txt and STATUS_AND_PLAN.txt. Historical notes follow.
+
+Code → Blocks (notes / draft plan)
+=================================
+
+Reality check
+-------------
+Converting arbitrary code to blocks is harder than blocks → code.
+To do it reliably we must parse code with a real parser (AST), not just split on
+characters like `) } ] , ;` because of nested structures, strings, template
+literals, comments, regex, etc.
+
+What we CAN do early (useful + simpler)
+---------------------------------------
+
+Phase 0: “Code snippets → blocks”
+- Let user select code in the manual editor and choose:
+  - “Wrap as Raw Code Block”
+- This creates one block that holds that text (escape safe) and generates it
+  verbatim into output.
+- This is a practical bridge while full parsing is built.
+
+Phase 1: “Shallow parse” (small set of patterns)
+- Use a JavaScript parser (Babel parser) to build an AST for a code selection.
+- Convert only supported AST node types into blocks, e.g.:
+  - VariableDeclaration (let/const)
+  - CallExpression (foo(...))
+  - IfStatement, ForStatement, WhileStatement
+  - FunctionDeclaration (simple)
+- For anything unsupported: fall back to “Raw Code Block”.
+
+Phase 2: “Round-trip mode”
+- To preserve manual edits, we need a round-trip strategy:
+  - Either treat blocks as snippet insertions (recommended early)
+  - Or maintain a mapping between AST ranges and blocks (hard)
+
+Policy: “Code is source of truth” (helper tool)
+------------------------------------------------
+This app is not primarily a learning tool. It is a helper tool.
+
+We support TWO block classes:
+
+1) Structured / Generatable blocks (stable)
+   - These represent known language constructs (if, for, functions, etc.) or
+     known library constructs (from a pack).
+   - They can be placed anywhere appropriate in the code and generate correct
+     output without needing exact user-typed characters.
+   - If a user types a “blank” version of that construct in code, the app
+     should be able to recognize it (via an AST parser) and show the matching
+     block (not dependent on capitalization/whitespace).
+
+2) Raw / User blocks (verbatim)
+   - These represent code that does not have a converter (yet), or code that
+     must be preserved character-for-character (strings, special syntax, niche
+     packages, quick hacks).
+   - Code is the truth; blocks are visualization + repeatability.
+   - For these blocks, the generator emits the stored code verbatim.
+
+Practically:
+- Early on, we will support Raw Code blocks immediately.
+- Structured code→blocks will be incremental: parse selections and convert only
+  the node types/patterns we support; everything else falls back to Raw blocks.
+
+Suggested approach for hybrid boundaries
+----------------------------------------
+- Generate code with region markers:
+  - // <zbc:block id="...">
+  - // </zbc:block>
+- Manual edits inside a block region either:
+  - are overwritten when regenerating, or
+  - are stored as “overrides” (later feature)
+
+Reducing marker impact
+----------------------
+- Markers are for internal stability (so blocks don’t fight manual edits).
+- When exporting/sharing code, strip markers (the app currently provides “Copy Clean”).
+- Longer-term option: store region/block metadata in a sidecar file instead of comments.
+
+Dependencies
+------------
+- For JS parsing: Babel parser is a good candidate.
+- For Python later: use a Python parser (or parse on the Python runtime side).

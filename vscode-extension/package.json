@@ -1,0 +1,21 @@
+{
+  "name": "zachsblockcoding-connector",
+  "displayName": "ZachsBlockCoding Connector",
+  "description": "Connect a local VS Code session to the standalone ZachsBlockCoding block editor.",
+  "version": "0.2.0",
+  "publisher": "zachsblockcoding",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "main": "./extension.cjs",
+  "extensionKind": ["ui"],
+  "activationEvents": ["onStartupFinished"],
+  "capabilities": { "untrustedWorkspaces": { "supported": false }, "virtualWorkspaces": false },
+  "contributes": {
+    "commands": [
+      { "command": "zachsblockcoding.connect", "title": "ZachsBlockCoding: Connect to Standalone App" },
+      { "command": "zachsblockcoding.share", "title": "ZachsBlockCoding: Share Active JavaScript File" },
+      { "command": "zachsblockcoding.disconnect", "title": "ZachsBlockCoding: Disconnect" },
+      { "command": "zachsblockcoding.forget", "title": "ZachsBlockCoding: Forget Pairing" }
+    ]
+  }
+}

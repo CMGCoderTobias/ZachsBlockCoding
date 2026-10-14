@@ -1,0 +1,98 @@
+ZachsBlockCoding - working prototype, October 12, 2026
+===================================================
+This guide supersedes the older USAGE/ARCHITECTURE experiments.
+
+October 13 update: read PAIRING_AND_AUTHORING.txt for remembered pairing,
+selection-only helpers, wrapped fields, Edit list and Expression reference.
+Install connector 0.2.0 and pair once again after updating both applications.
+
+Start in D:\Reborn Entertainment\Reborn\Coding\ZachsBlockCoding:
+  npm run build
+  npm start
+
+For development with Vite hot reload:
+  npm run electron:dev
+UI changes reload automatically. Main/preload edits require restarting Electron.
+
+Start with the example. The left side shows real nested Blockly blocks; the
+right side contains the authoritative JavaScript. Each top-level declaration
+or statement starts as its own section, rather than one forced execution chain.
+
+1. Edit the code. After a 300ms typing pause, the block view updates.
+2. Click a block. Its exact source appears in the lower editor.
+3. Edit that text and click Apply block edit. Only its source range is replaced.
+4. Insert a snippet at the code cursor, including inside a function body.
+5. Connect statement blocks to reorder or nest them. Disconnecting a statement
+   makes it a separate section. Moving an independent section around the canvas
+   changes its layout only. Invalid JavaScript moves are rejected.
+6. Undo/Redo restores source changes; the blocks follow the restored source.
+
+Open JS loads existing UTF-8 .js/.mjs/.cjs/.jsx files, up to 1 MB.
+Save writes normal source with no editor markers. Layout is saved separately as
+<file>.zbc.json and preceding source is kept as <file>.zbc.backup (one copy).
+An outside edit blocks Save; reopen the file or use Save As to keep both versions.
+Layout is ignored if it belongs to different source. It is always disposable.
+Existing comments, marker-looking strings, BOM and CRLF are not stripped.
+
+Run JS uses a disposable browser worker, with Stop, a 3-second limit and bounded
+console output. It supports awaited asynchronous work, but not Node packages,
+static imports, DOM access or persistent background tasks. It is for your own
+code; it is not a hardened environment for arbitrary downloaded programs.
+
+Incomplete code stays in the editor. Blocks show the last valid parse and stay
+locked until the code is valid. There is no automatic execution or autosave.
+Save before closing. Unsaved source prompts before closing or opening another file.
+
+App-managed data lives in .zbc-runtime beside this project on D:. Set ZBC_DATA_DIR
+to another writable directory when using another computer or a packaged build.
+Older Electron AppData files are not automatically migrated/deleted.
+
+Checks:
+  npm test         - source/Blockly round-trip and storage regressions
+  npm run test:ui  - hidden Electron UI checks; result and screenshot in .zbc-runtime
+
+Most block editing still uses the source inspector. A complete typed-field
+toolbox and community pack manager are upcoming, not finished features.
+Invalid code fallback (October 12 follow-up)
+-------------------------------------------
+Incomplete code is displayed as a red warning block. Unchanged regions keep
+their last known structure; this is provisional until syntax is valid again.
+Select a warning block, edit its text in the inspector, and Apply to repair it,
+or continue typing directly in the code pane. No source text is discarded.
+The template menu now also includes loops, if/else, try/catch, async functions
+and classes. A draggable creation toolbox and on-block fields remain planned.
+
+Direct block authoring and editor sync - October 13
+-------------------------------------------------
+Rebuild with npm run build and restart with npm start to see the new UI.
+Start with New JS for an empty file, or open an existing JavaScript file.
+Select a category on the left of the block canvas, then drag a premade block
+onto the canvas or connect it inside another block's body. There are Functions,
+Values, Conditions, Loops and Other categories, not just a snippet dropdown.
+Click a white field on a block to edit a name, parameter, value, condition or
+loop expression. Press Enter or click outside the field to apply the change.
+Complex/unsupported expressions and multiline raw code still use the inspector.
+Names are case-sensitive; renaming a function does NOT rename its callers.
+
+To use alongside VS Code / Visual Studio / another editor, open the SAME FILE
+in both apps. Save in the other editor: this app reloads it when no local edits
+are pending. Save here: the other editor can detect the ordinary disk change.
+If local edits exist, the persistent warning keeps them; choose Reload from disk
+to discard them after confirmation, or Save As to a DIFFERENT file to keep both.
+There is no background autosave: save deliberately when sharing changes.
+Only saved text is synchronized, not unsaved buffers or editor extensions.
+The other editor controls its own reload/unsaved-conflict behavior.
+
+Latest: folders, tabs and live VS Code - October 13
+-------------------------------------------------
+Use Open Folder to browse a project; files now stay open in separate tabs with
+their own drafts and undo history. Non-JavaScript UTF-8 files use a text-only view.
+An OPTIONAL live VS Code connector is now implemented, not merely planned.
+Install releases\zachsblockcoding-connector-0.1.0.vsix in your normal VS Code
+profile, click Connect VS Code here, and paste the pairing code into VS Code's
+ZachsBlockCoding: Connect to Standalone App command. Blocks only hides the code
+preview and inspector while connected; VS Code owns typing and saving.
+The tests used an isolated profile, so they did not install it in your own profile.
+Read MULTIFILE_AND_VSCODE.txt for setup, conflict handling and current limits.
+This section supersedes older single-file/no-unsaved-buffer descriptions below.
+

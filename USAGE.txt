@@ -1,0 +1,38 @@
+SUPERSEDED: See START_HERE.txt and STATUS_AND_PLAN.txt (October 12, 2026).
+The following describes the older experimental UI, not the current app.
+
+ZachsBlockCoding – Prototype Usage
+=================================
+
+Run the app (dev)
+----------------
+In `D:\Reborn Entertainment\Reborn\Coding\ZachsBlockCoding`:
+- `npm run electron:dev`
+
+Core workflow (current prototype)
+--------------------------------
+- Manual JavaScript is the source of truth.
+  - Use the “Manual JavaScript (Source of Truth)” panel to write/paste code.
+  - “Run Manual” runs the manual code and prints output in “Run Output”.
+- If you enable “Live Sync”, block output is written into a bounded region marked
+  either by:
+  - Sidecar region mode (recommended): select a range in Manual and click “Set Blocks Region”.
+    Live Sync will rewrite only that selected region without inserting any marker comments.
+  - Marker mode (legacy): if your file already contains ZBC markers, Live Sync can still read them.
+- Use “Copy Clean” to copy the manual code without any ZBC marker comments.
+
+- Blocks are helpers.
+  - Use blocks to generate snippets.
+  - Click “Insert Generated” to insert generated code at the cursor in Manual.
+
+Code → Blocks (current prototype)
+--------------------------------
+- Select some code in the Manual editor and click “Code → Raw Block”.
+  - This creates a “Raw JS” block that will emit the selected code verbatim.
+  - If no selection is made, it uses the entire manual code.
+
+Next planned evolution
+----------------------
+- Code → structured blocks via AST parsing (incrementally).
+- Multi-file projects saved to disk (not localStorage).
+- Packs from local folders + registry list (Unity/VS Code style).

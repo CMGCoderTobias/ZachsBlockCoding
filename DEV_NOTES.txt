@@ -1,0 +1,66 @@
+CURRENT NOTES: See START_HERE.txt and STATUS_AND_PLAN.txt.
+Sandboxed Electron preloads have additional ESM restrictions; renaming the
+preload to .mjs is not a safe drop-in conversion. Current preload stays .cjs.
+The active editor no longer uses marker comments. Historical notes follow.
+
+ZachsBlockCoding – DEV NOTES
+===========================
+
+Why is this project “hybrid” (ESM + CJS)?
+----------------------------------------
+
+This repo uses ES modules (ESM) for the app code you write and edit most:
+- package.json has "type": "module"
+- Vite expects/likes ESM for browser/renderer code
+- All code under /src is ESM (import/export)
+
+Electron has TWO separate JavaScript “worlds”:
+1) Main process (Node-like): creates windows, manages app lifecycle
+2) Renderer process (Browser-like): the UI you see (runs Vite output)
+   + optional preload script that bridges a tiny safe API into the renderer
+
+We use CommonJS (.cjs) ONLY for Electron main/preload right now because it is the
+least error-prone setup while we’re building:
+- With "type": "module", any .js file is treated as ESM by Node/Electron.
+- Many Electron examples and some tooling still assume CommonJS patterns.
+- Using .cjs guarantees “this file is CommonJS”, regardless of "type": "module".
+
+This avoids the classic confusion:
+- "type": "module" makes require(...) fail in .js files.
+- ESM requires import syntax and sometimes different path/dirname handling.
+
+Is this going to be a problem later?
+-----------------------------------
+
+No, this is a common pattern:
+- Renderer (Vite app): ESM
+- Electron main/preload: CJS
+
+It’s only “hybrid” at the repo level. Each file’s module system is explicit:
+- /src/*.js => ESM (because of "type": "module")
+- /electron/*.cjs => CommonJS (because of the .cjs extension)
+
+If we later want EVERYTHING to be ESM:
+-------------------------------------
+
+We can convert /electron/main.cjs and /electron/preload.cjs to ESM by either:
+- renaming them to .mjs and using import/export, or
+- keeping .js (since "type": "module") and switching to import/export
+
+When doing that, we must also adjust a few Node/Electron specifics:
+- __dirname isn’t available in ESM (need import.meta.url + fileURLToPath)
+- require(...) becomes import ...
+
+Rule of thumb for this repo:
+----------------------------
+
+- Anything UI / blocks / packs: put it in /src as ESM.
+- Anything Electron bootstrapping: keep it in /electron as .cjs until we’re stable.
+
+Notes on “marker comments”
+--------------------------
+Some features (like Live Sync) use special ZBC marker comments inside the Manual
+editor text to define a bounded region that blocks can safely rewrite.
+
+If you don’t want these markers in code you share or open in VS Code:
+- Use the “Copy Clean” button in the app, which strips ZBC markers.

@@ -1,0 +1,183 @@
+Where we are - October 13, 2026
+================================
+
+Latest authoring update (supersedes connector 0.1.0 setup below)
+- Verified: 28 regression tests, 75 Electron UI checks, 11 real VS Code host
+  checks (including reconnect), production build and connector 0.2.0 packaging.
+- See PAIRING_AND_AUTHORING.txt for connector 0.2.0 setup and limitations.
+- Remembered, encrypted pairing; mutual proof before sharing; bounded retries;
+  disconnect and forget controls; trusted local workspace only.
+- Selection-only helper controls, complete wrapped field text, structured
+  import/argument/parameter/array/object list edits and a searchable reference.
+- No whole-project semantic analysis or exhaustive package API catalog yet.
+
+Latest follow-up: connected ownership, layout and editable expression headers
+- Verified this follow-up: 22 regression tests, 63 Electron UI checks and the
+  production build pass. Connector VSIX rebuilt; not installed in your profile.
+- See LAYOUT_AND_CONNECTED_MODE.txt for current behavior and limitations.
+- Connected mode automatically hides typing panes; active VS Code files are
+  followed automatically. Unsupported active editors show a warning.
+- Standalone disk operations pause while connected; block edits go to VS Code.
+- Collision spacing uses rendered block sizes without changing source order.
+- Nested callback headers/literals have editable fields; calls have file-local
+  suggestions with free typing, and async/await selectors are available.
+- Still planned: scope-aware cross-file suggestions, semantic refactoring,
+  richer expression controls and Python after the JavaScript runtime milestone.
+
+Latest milestone: multi-file workspace + optional live VS Code connector
+- Verified: 20 regression tests, production build, 59 Electron checks and 10
+  real VS Code extension-host checks pass. The VSIX installs successfully in
+  the isolated D: test profile; your normal VS Code profile is unchanged.
+- Covered: per-file history, folder traversal checks, text-only files, BOM/CRLF
+  preservation, blocks-only mode, live unsaved edits/undo/save, stale versions,
+  simultaneous field edits, disconnect cleanup and no duplicate edit echoes.
+- Lazy Open Folder explorer, text-only non-JS files, per-file tabs and histories.
+- Unsaved drafts survive tab switches. Inactive files refresh/check on activation.
+- Optional installable local VSIX in releases, no new npm dependencies.
+- Explicit authenticated loopback pairing; unsaved VS Code snapshots flow into
+  blocks. Minimal version-checked block edits flow back through VS Code's edit
+  API, including its undo history. Save delegates to VS Code while connected.
+- Blocks-only / code-preview toggle for connected tabs; standalone remains usable
+  without the extension. Disconnect preserves buffers and restores local typing.
+- Folder traversal and symlink escapes rejected; source/frame/tab counts bounded.
+- Current 20-tab/1MB limits are safety/resource limits, not permanent design goals.
+- No persistent tab recovery, automatic merge, remote VS Code or Visual Studio
+  adapter yet. No Node runtime, Python, package-aware imports or full pack system.
+- Next: real-project trials, richer expression blocks, persistent draft recovery,
+  Node runtime and imports, then Python and community packs as already agreed.
+- MULTIFILE_AND_VSCODE.txt is the current setup/behavior guide. Older sections
+  below record earlier milestones and do not override the current behavior.
+
+Current authoring and editor-sync milestone (supersedes older limitations below)
+- Verification: 15 automated regression tests, production build, main/preload/
+  watcher syntax checks and 34 Electron interaction checks passed October 13.
+  UI checks include actual field input, dragging a loop out of the flyout,
+  undo, New JS, external disk reload and conflicting-edit protection. External
+  saves were simulated by a test writer, not by automating VS Code itself.
+- Categorized draggable Blockly toolbox: Functions, Values, Conditions, Loops,
+  Other. Fourteen premade templates with actual nested statement sockets.
+- Direct on-block fields for supported names, parameters, values, calls,
+  conditions and loop expressions. Enter or leaving the field applies changes.
+  Syntax punctuation remains intact outside edited spans; comments/whitespace
+  outside those spans stay unchanged. Unsupported/multiline edits use inspector.
+- Block creation, field editing, reconnection and deletion update authoritative
+  source. Parsing waits until field editing/dragging finishes. Invalid resulting
+  code uses the warning fallback rather than silently discarding the edit.
+- Independent top-level blocks keep source order, not screen-coordinate order;
+  dropping a new independent block appends a section. Connections determine
+  insertion/nesting within a statement sequence. Renaming is not refactoring.
+- Editor-independent saved-file sync: open the same JS file in this app and
+  VS Code, Visual Studio, or another editor. External saves update a clean view.
+  With unsaved local edits, a persistent conflict warning preserves the buffer;
+  Reload from disk discards local edits only after confirmation, or Save As
+  keeps a separate copy. Hash-based save checks reject stale versions.
+- One active-file metadata poll per second; contents read only on file-change
+  events. No project scan, network listener, extra dependency or extension.
+- File sync does not share unsaved editor buffers, extensions, debugger sessions
+  or language-server state. Optional editor adapters are a later milestone.
+- New JS starts an empty file for block authoring; Example remains available.
+- Next: broader field/expression editing, multi-file
+  navigation, package-aware imports, Node runtime, and then Python as agreed.
+- See EDITOR_INTEGRATION_PLAN.txt for the standalone/optional-adapter boundary.
+
+Follow-up: invalid-source fallback and common templates
+- Incomplete text now becomes a red warning block rather than freezing the map.
+- The previous usable structure guides recovery; unaffected sibling blocks stay.
+- Nested body recovery is attempted first; ambiguous changes use larger raw
+  regions. Exact source preservation is checked before displaying recovery.
+- Warning blocks are editable through the source inspector. Completing valid
+  syntax restores ordinary blocks. Retained structure is provisional, not proof
+  that surrounding code still has the same meaning with unmatched delimiters.
+- Prominent syntax warning explains recovery. Syntax is not semantic validation.
+- Templates include function, async function, for, for-of, while, if/else,
+  variable, console log, try/catch and class via Insert at code cursor.
+- Next authoring milestone: draggable toolbox and editable block fields/sockets.
+  Those are NOT implemented by the template menu.
+- This supersedes the paused-invalid-text behavior described below.
+
+Working prototype milestone:
+- Visible Blockly view with nested bodies and independent top-level sections.
+- Manual code -> blocks and selected block source edit -> code.
+- Lossless unchanged round trips, including current application source files.
+- Statement reconnection/deletion, syntax checks, undo/redo, snippet insertion.
+- Open/save ordinary JS files; hash-checked sidecar layout; one recovery backup.
+- D: app-managed storage; no marker comments; bounded history/output.
+- Browser JS run/stop/timeout. No Node package runner yet.
+
+Verified in this repair:
+- Seven automated regression tests pass, including all current app JS files
+  through actual Blockly workspaces without source changes.
+- Seventeen rendered Electron checks pass, including both editing directions,
+  incomplete source, undo/redo, infinite-loop termination and actual open/save.
+- An existing app source file was opened and saved through Electron IPC and
+  the result compared exactly with the original text.
+- Production build and Electron/preload/development launcher syntax checks pass.
+
+What this does NOT mean:
+This is not a finished general-purpose blocks IDE. Most block editing still uses
+the source inspector. Community pack installation, multi-file navigation,
+package imports, advanced expression blocks and Python are not implemented.
+
+ZachCodingStream readiness (public registry checked October 12: latest 0.0.1):
+- Basic named JavaScript functions/imports/exports/calls can be indexed.
+- Public package main points to missing core/index.js: require(package) fails.
+  The app uses shipped core/fileParser directly as a limited adapter on Open.
+- Arrow-function call attribution loses the enclosing function name.
+- The Python parser is a placeholder returning empty symbols/calls.
+- The local JS parser and installed public JS parser have identical SHA256.
+- Removed a stale extraneous local-engine lockfile record; the installed engine
+  still resolves to registry.npmjs.org, with no local-repository dependency.
+- Existing small core tests do not establish arbitrary-project correctness.
+Conclusion: useful experimental JS analysis, not ready as the authoritative
+parser/indexer for the editor. It no longer blocks the working block view.
+
+Next sequence:
+1. User trial on copies of real project files; fix interaction/preservation
+   issues exposed by that trial. Keep original project backups.
+2. Rich built-in JS blocks (editable fields/sockets), better structural editing,
+   multi-file navigation, package-aware imports and a Node-capable runtime.
+3. Add Python as soon as the agreed JS runtime is usable. Reuse the editor
+   protocol, with a real Python parser/runtime instead of the ZCS placeholder.
+4. Versioned pack contract + local-folder packs, then searchable registries.
+   Discovery suggests multiple compatible packs; install/enable stays explicit.
+   npm is an optional distribution channel, not a core requirement.
+5. Broader tests, background analysis/caching, update compatibility, packaging
+   and complete third-party license notices before a public release.
+
+Separate ZCS work:
+Repair public entrypoint, structured parse diagnostics, scope-aware symbol
+identity/calls, configurable persistence and fixture coverage before publishing
+a new version. No publish or changes to that separate repository in this repair.
+
+Current implementation:
+sourceModel.js lazily loads Babel and records source slices and nested bodies.
+sourceBlocks.js renders them and reuses unchanged top-level Blockly objects.
+app.js coordinates code edits with revisions, debounce and paused block editing
+while text is invalid/pending. Events are disabled during programmatic rendering.
+fileStore.cjs uses native-dialog-selected file capabilities, conflict checks,
+atomic writes and one backup; sidecars contain only disposable layout data.
+
+Performance, stated accurately:
+- Babel reparses the active file after a typing pause. Not incremental parsing.
+- Unchanged top-level visual trees are reused; changed sections are rebuilt.
+- No project-wide scan while typing; ZCS is used only on file open.
+- Saving writes the complete source atomically. No accumulating AST cache.
+- Undo holds at most 40 snapshots with roughly 4M characters aggregate budget.
+- Current file limit 1 MB. Background parsing and larger projects remain future work.
+
+Known limits:
+- No dedicated nested views for every construct (e.g. switch cases/expressions).
+- Syntax validation cannot prove scope, imports, types or runtime behavior.
+- Matching unchanged node text preserves IDs, not arbitrary semantic identities.
+- JS is case-sensitive: preserve identifiers and capitalization exactly.
+- App-managed userData/sessionData/temp/crashDumps use .zbc-runtime on D:;
+  operating-system-managed storage cannot be controlled by this app.
+- Project .npmrc directs npm cache/logs into .zbc-runtime/npm-cache.
+- Old project.json/localStorage formats are not automatically migrated.
+- Old modules remain on disk as inactive reference; current UI imports only
+  sourceModel/sourceBlocks/runner. Old pack scaffolding is not a stable API.
+- The 800KB Vite warning threshold predates this repair. It does not shrink the
+  bundled Blockly library. Babel remains a separate lazy-loaded chunk.
+
+Source backup before repair:
+D:\Reborn Entertainment\Reborn\Coding\ZachsBlockCoding-backup-20261012-130732
