@@ -1,0 +1,31 @@
+ZachsBlockCoding VS Code connector
+=================================
+
+No npm, Node installation, or development checkout is required.
+
+1. Open VS Code's Extensions view (Ctrl+Shift+X).
+2. Use the ... menu, then Install from VSIX...
+3. Choose the zachsblockcoding-connector-<version>.vsix file.
+4. Open a trusted local project folder in VS Code.
+5. Start ZachsBlockCoding and click Connect VS Code to copy a pairing code.
+6. In VS Code press Ctrl+Shift+P, choose
+   ZachsBlockCoding: Connect to Standalone App, and paste that code.
+
+The app's Get VS Code extension button locates the bundled VSIX.
+The same VSIX is attached separately to each GitHub app release. A private
+GitHub repository requires repository access to download directly from GitHub.
+
+Pairing is saved securely where supported. Keep the standalone app running;
+the connector reconnects and follows the active JavaScript file automatically.
+VS Code owns the live buffer and file saves while connected.
+
+Updates: download the newer VSIX and repeat Install from VSIX. Reload VS Code
+when prompted. Installing the desktop app does not silently modify VS Code.
+
+Marketplace publishing is a separate optional step requiring a verified
+publisher account. This build does not claim a Marketplace listing or
+automatic extension updates. The extension ID remains
+zachsblockcoding.zachsblockcoding-connector for future compatible upgrades.
+
+The connector cannot supply the standalone app itself. Other editors need
+their own adapters; the application remains independent of VS Code.

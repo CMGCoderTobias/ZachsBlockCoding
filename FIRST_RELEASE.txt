@@ -1,0 +1,106 @@
+ZachsBlockCoding 0.1.0 - Windows x64 first release
+================================================
+
+Release source: GitHub, CMGCoderTobias/ZachsBlockCoding.
+GitHub is the default. Custom-hosted releases require an explicit decision.
+The application feed is configured in Coding/config/zachsblockcoding-release.windows.json:
+https://kosradio.com/security/v1/updates/zachsblockcoding/manifest
+The Reborn agent bootstrap configuration is copied from the updater's existing
+examples/agent-bootstrap.json, which uses kosradio. No per-app custom host is
+hardcoded into RebornUpdateAgent or this app's JavaScript.
+
+Use today
+---------
+Extract the full Windows ZIP into a writable folder on D: and double-click
+ZachsBlockCoding.exe. Keep the other files alongside it. Node/npm are not
+required on the destination PC. This is a complete app folder, not a single
+self-contained executable. Only Windows x64 is built and tested here.
+
+The release also includes the Reborn web setup. It needs a published GitHub
+release AND a deployed Watchdog app mapping. Building or self-testing setup
+does NOT demonstrate that the live update route works. The site deployment
+is deliberately left to the owner; no server has been modified remotely.
+The standalone ZIP can run offline regardless of update-server availability.
+
+Storage
+-------
+Packaged settings live in a sibling <install-folder>.data/<Windows-user> folder,
+outside the installation so Reborn updates/uninstall do not erase them.
+Managed .reborn/versions paths resolve back to the original installation root.
+Put the app on D: to keep its settings, temporary files, and capped cache on D:.
+ZBC_DATA_DIR overrides this explicitly. Development still uses .zbc-runtime;
+existing development settings are not silently moved or deleted. A new packaged
+installation may need one new VS Code pairing.
+
+The Reborn web setup has its own platform storage defaults; do not run it on
+this space-constrained PC until its install/cache paths are reviewed. Testing
+the setup uses only --self-test, not a real installation or startup registration.
+Directly running an extracted ZIP does not silently register an updater.
+Later, adopt that same installation root rather than creating a second copy.
+
+VS Code distribution
+--------------------
+Connector 0.2.1 is attached to the release and bundled under resources/connector.
+Click Get VS Code extension to locate it. Install with VS Code's Extensions
+... menu, Install from VSIX. See EXTENSION_INSTALL.txt for pairing and updates.
+No Marketplace account is required for VSIX distribution. Marketplace upload
+is separate and has not been performed; extension updates are manual for now.
+
+Developer release process
+-------------------------
+1. npm ci (project .npmrc puts the cache on D: when this checkout is on D:).
+2. npm run release:local builds the app, connector, and Reborn setup, then calls
+   RebornPublisher to create the ZIP, blockmap and signed manifest locally.
+3. node scripts/verify-release.cjs validates the signature, artifact hashes,
+   feed origin, payload exclusions, notices and identical bundled connector.
+4. npm run release:publish explicitly uploads using RebornPublisher. It also
+   updates the local Watchdog mapping. Deploy that mapping on the site yourself.
+5. Run the publisher's Test-WatchdogRelease.ps1 after site deployment.
+
+All release scripts put temporary files, npm/Electron caches, and .NET/NuGet
+data under .zbc-runtime on this drive. Builder is only used for the runnable
+folder, never as an alternate updater. Private signing keys stay in the updater
+developer repository and never enter the customer payload. The signatures
+are Reborn manifest signatures, not a Windows Authenticode certificate;
+SmartScreen may warn about the unsigned executable/setup.
+
+Source package.json remains private:true to prevent accidental npm publishing.
+That setting does not make the GitHub repository private.
+
+Known scope
+-----------
+This remains a JavaScript prototype, not a full IDE or an exhaustive API catalog.
+The optional Run action executes browser JavaScript, not Node/package imports.
+Python follows a usable JavaScript runtime, as planned. Other editors can use
+future adapters; the app is not dependent on VS Code.
+
+Logo
+----
+assets/logo.svg is the editable, scalable block-shaped Z mark. PNG and the
+multi-resolution Windows ICO are derived locally with the build-only resvg
+renderer. No image-generation service or C: image cache is used.
+
+Publisher compatibility fix
+---------------------------
+Register-WatchdogApp.ps1 now accepts schema 1 or 2 and preserves the existing
+schema and unrelated/custom routes. scripts/Test-PublisherRegistration.ps1
+tests both using isolated fixtures, never the live site.
+
+Build tooling currently has upstream deprecated transitive dependencies.
+They are not bundled as application dependencies. The production dependency
+audit and executable/UI tests are checked separately; no claim is made that
+every upstream build tool dependency is free of deprecation warnings.
+
+Local verification - October 14, 2026
+-----------------------------------
+31 Node regressions, 75 Electron UI checks, and 11 VS Code host checks passed.
+The final packaged executable started successfully and parsed code using the
+published engine. The bundled connector also installed in an isolated VS Code
+profile. Setup self-test passed; live website installation remains untested.
+A fresh-profile UI attempt timed out after a browser network-service crash;
+the subsequent complete run passed. Production npm audit reported zero issues.
+
+An earlier invalid-package test fell back to Electron's default shell and
+touched the pre-existing Electron profile on C:. That profile was preserved.
+The corrected payload excludes the default shell, verifies packaged source
+bytes, and tests with an explicit D: profile before release packaging.

@@ -3,3 +3,7 @@ dist/
 .zbc-runtime/
 *.zbc-tmp-*
 test/.tmp-*/
+.release-build/
+release-output/
+releases/*.vsix
+*.data/

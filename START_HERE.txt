@@ -2,6 +2,10 @@ ZachsBlockCoding - working prototype, October 12, 2026
 ===================================================
 This guide supersedes the older USAGE/ARCHITECTURE experiments.
 
+October 14 desktop release: read FIRST_RELEASE.txt and EXTENSION_INSTALL.txt.
+The Windows app no longer needs npm start. Connector 0.2.1 is bundled as a VSIX.
+Live updater/installer downloads still require the owner's Watchdog deployment.
+
 October 13 update: read PAIRING_AND_AUTHORING.txt for remembered pairing,
 selection-only helpers, wrapped fields, Edit list and Expression reference.
 Install connector 0.2.0 and pair once again after updating both applications.

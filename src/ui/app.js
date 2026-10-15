@@ -6,6 +6,7 @@ import { createToolbox } from "./blockTemplates.js";
 import { createFileBrowser } from "./fileBrowser.js";
 import { editorText, savedText } from "../core/documentText.js";
 import { runJavaScript } from "./runner.js";
+import logoUrl from "../../assets/logo.svg";
 
 const SAMPLE = `function greet(name) {\n  if (name) {\n    console.log("Hello, " + name);\n  } else {\n    console.log("Hello!");\n  }\n}\n\nfunction total(values) {\n  return values.reduce((sum, value) => sum + value, 0);\n}\n\ngreet("Zach");\nconsole.log(total([1, 2, 3]));\n`;
 const SNIPPETS = { log: 'console.log("Hello");', variable: 'const value = 1;', condition: 'if (true) {\n  console.log("Inside if");\n}', function: 'function example() {\n  return 1;\n}' };
@@ -21,7 +22,7 @@ Object.assign(SNIPPETS, {
 
 export function initApp(root) {
   root.innerHTML = `<div class="app">
-    <header class="topbar"><div class="brand"><h1>ZachsBlockCoding</h1><span class="pill">JavaScript prototype</span></div>
+    <header class="topbar"><div class="brand"><img src="${logoUrl}" alt="" width="36" height="36"><h1>ZachsBlockCoding</h1><span class="pill">JavaScript prototype</span></div>
     <div class="actions"><button class="btn" data-action="blank">New JS</button><button class="btn" data-action="new">Example</button><button class="btn" data-action="open">Open JS</button><button class="btn primary" data-action="save">Save</button><button class="btn" data-action="saveAs">Save As</button><button class="btn" data-action="undo">Undo</button><button class="btn" data-action="redo">Redo</button><button class="btn" data-action="run">Run JS</button><button class="btn" data-action="stop">Stop</button></div></header>
     <div class="statusArea"><div class="documentTools"><button class="btn" data-action="folder">Open Folder</button><button class="btn" data-action="connect">Connect VS Code</button><button class="btn" data-action="disconnect">Disconnect</button><button class="btn" data-action="toggleMode" id="toggleMode" disabled>Blocks only</button><span id="connectionStatus">Standalone</span></div><div id="tabs" role="tablist" aria-label="Open files"></div><div class="status"><span id="filename">Untitled.js</span><span id="status" role="status">Loading parser…</span><span id="syncState"></span><button class="btn" data-action="reload">Reload from disk</button></div><div id="externalNotice" class="syntaxWarning" role="alert" hidden></div></div>
     <main class="workbench"><aside class="panel explorer" hidden><div class="panelHeader"><span class="folderName">Folder</span><button class="btn" data-action="refreshFolder">↻</button></div><div class="fileTree"></div></aside><section class="panel blocksPanel"><div class="panelHeader"><span class="title">Blocks · drag from categories · click white fields to edit</span><button class="btn" data-action="fit">Fit</button></div><div id="blockly" class="blocklyHost"></div></section>
@@ -29,7 +30,10 @@ export function initApp(root) {
     <section class="panel inspector"><div class="panelHeader"><label for="blockText" id="selection" class="title">Select a block to edit its code</label><div class="actions"><select id="snippet" aria-label="Snippet"><option value="log">Console log</option><option value="variable">Variable</option><option value="condition">If statement</option><option value="function">Function</option></select><button class="btn" data-action="insert">Insert at code cursor</button><button class="btn primary" data-action="apply">Apply block edit</button></div></div><textarea id="blockText" class="editor" spellcheck="false" aria-label="Selected block source" disabled></textarea></section>
     <pre id="output" class="output" aria-label="Run output">Run executes browser JavaScript in a disposable worker. Node imports and DOM APIs are not supported yet.</pre></div>`;
   const source = root.querySelector("#source");
-  for (const [action, label, selector] of [["forget", "Forget pairing", ".documentTools"], ["lists", "Edit list…", ".blocksPanel .panelHeader"], ["reference", "Expression reference", ".blocksPanel .panelHeader"]]) {
+  void window.zbc?.appInfo?.().then(info => {
+    if (info?.version) root.querySelector(".pill").textContent = `v${info.version} · JavaScript prototype`;
+  }).catch(() => {});
+  for (const [action, label, selector] of [["connector", "Get VS Code extension", ".documentTools"], ["forget", "Forget pairing", ".documentTools"], ["lists", "Edit list…", ".blocksPanel .panelHeader"], ["reference", "Expression reference", ".blocksPanel .panelHeader"]]) {
     const button = document.createElement("button");
     button.className = "btn"; button.dataset.action = action; button.textContent = label;
     root.querySelector(selector).append(button);
@@ -520,6 +524,11 @@ export function initApp(root) {
   });
 
   const actions = {
+    async connector() {
+      const result = await window.zbc?.showConnector?.();
+      if (!result || result.error) throw new Error(result?.error || "Use the desktop app to locate the extension.");
+      status.textContent = "In VS Code: Extensions → … → Install from VSIX, then choose the highlighted file.";
+    },
     async lists() { await authoring.lists(); },
     reference() { authoring.reference(); },
     async forget() {
@@ -658,7 +667,9 @@ export function initApp(root) {
   source.value = SAMPLE;
   activeTab = newTab({ source: SAMPLE, savedSource: "" });
   remember(SAMPLE);
-  void schedule(SAMPLE, true);
+  void schedule(SAMPLE, true).then(() => {
+    if (model && !model.diagnostic && workspace.getAllBlocks(false).length) return window.zbc?.startupReady?.();
+  }).catch(error => { status.textContent = `Startup failed: ${error.message}`; });
   void window.zbc?.resumeEditor?.().then(result => {
     if (result.error) status.textContent = `Automatic connection unavailable: ${result.error}`;
     else if (result.remembered && !editorConnected) root.querySelector("#connectionStatus").textContent = "Remembered pairing · waiting for VS Code to reconnect…";

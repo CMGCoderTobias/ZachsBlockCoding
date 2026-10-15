@@ -1,13 +1,15 @@
 const path = require("path");
 const fs = require("fs");
-const { app, BrowserWindow, ipcMain, dialog, clipboard, safeStorage } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, clipboard, safeStorage, shell } = require("electron");
+const { runtimeDirectory } = require("./runtimePaths.cjs");
+const { reportHealth } = require("./updateHealth.cjs");
 const { PairingStore } = require("./pairingStore.cjs");
 const { FileStore } = require("./fileStore.cjs");
 const { FileWatcher } = require("./fileWatcher.cjs");
 const { FolderStore } = require("./folderStore.cjs");
 const { EditorBridge } = require("./editorBridge.cjs");
 
-const runtime = process.env.ZBC_DATA_DIR || path.resolve(__dirname, "..", ".zbc-runtime");
+const runtime = runtimeDirectory({ packaged: app.isPackaged, executable: process.execPath, projectRoot: path.resolve(__dirname, ".."), override: process.env.ZBC_DATA_DIR });
 for (const name of ["userData", "sessionData", "temp", "crashDumps"]) {
   const directory = path.join(runtime, name);
   fs.mkdirSync(directory, { recursive: true });
@@ -16,13 +18,17 @@ for (const name of ["userData", "sessionData", "temp", "crashDumps"]) {
 app.commandLine.appendSwitch("disk-cache-size", "16777216");
 app.commandLine.appendSwitch("disable-gpu-shader-disk-cache");
 const store = new FileStore();
-const smoke = process.argv.includes("--smoke-test");
+const smoke = !app.isPackaged && process.argv.includes("--smoke-test");
+const packagedSmoke = app.isPackaged && process.argv.includes("--packaged-smoke-test");
+const hidden = smoke || packagedSmoke;
+let startupReady = false;
+let startupTimer;
 const previousClipboard = smoke ? clipboard.readText() : null;
 let smokePairingCode;
-const devUrl = process.env.VITE_DEV_SERVER_URL;
+const devUrl = !app.isPackaged && process.env.VITE_DEV_SERVER_URL;
 let win;
 const folders = new FolderStore();
-const pairingStore = smoke ? null : new PairingStore(path.join(runtime, "userData", "editor-pairing.bin"), safeStorage);
+const pairingStore = hidden ? null : new PairingStore(path.join(runtime, "userData", "editor-pairing.bin"), safeStorage);
 const bridge = new EditorBridge(update => {
   if (win && !win.isDestroyed()) win.webContents.send("zbc:editor-event", update);
 }, pairingStore);
@@ -126,6 +132,34 @@ handler("zbc:editor-resume", async () => {
   return { remembered: true };
 });
 handler("zbc:editor-forget", () => { bridge.stop(); pairingStore?.forget(); });
+handler("zbc:app-info", () => ({ version: process.env.REBORN_APP_VERSION || app.getVersion() }));
+handler("zbc:connector", () => {
+  const directory = app.isPackaged ? path.join(process.resourcesPath, "connector") : path.join(__dirname, "..", "releases");
+  const filename = fs.readdirSync(directory).filter(name => /^zachsblockcoding-connector-[\d.]+\.vsix$/.test(name)).sort((left, right) => right.localeCompare(left, undefined, { numeric: true }))[0];
+  if (!filename) throw new Error("Build the connector with npm run package:connector first.");
+  shell.showItemInFolder(path.join(directory, filename));
+  return { ok: true };
+});
+handler("zbc:startup-ready", async () => {
+  if (startupReady) return;
+  startupReady = true;
+  clearTimeout(startupTimer);
+  if (packagedSmoke) {
+    try {
+      const { parseFile } = require("@zachscodingstream/engine/core/fileParser");
+      const result = parseFile("smoke.js", "function packagedCheck() { return 1; }");
+      if (!Array.isArray(result.symbols)) throw new Error("Packaged analyzer is missing");
+      fs.writeFileSync(path.join(runtime, "packaged-smoke.json"), JSON.stringify({ ok: true, version: app.getVersion(), packaged: app.isPackaged, symbols: result.symbols.length, runtime }));
+      setTimeout(() => app.exit(0), 100);
+    } catch (error) {
+      fs.writeFileSync(path.join(runtime, "packaged-smoke.json"), JSON.stringify({ ok: false, error: error.message }));
+      app.exit(1);
+    }
+  } else if (!smoke && app.isPackaged) {
+    const result = await reportHealth();
+    if (result.error) console.warn("Reborn health receipt:", result.error);
+  }
+});
 handler("zbc:editor-edit", payload => bridge.edit(payload));
 handler("zbc:editor-request", payload => {
   if (!payload || !["save", "focus"].includes(payload.type)) throw new Error("Unsupported editor operation.");
@@ -133,7 +167,8 @@ handler("zbc:editor-request", payload => {
 });
 
 app.whenReady().then(async () => {
-  win = new BrowserWindow({ show: !smoke, width: 1500, height: 1000, backgroundColor: "#0b0f17", webPreferences: { preload: path.join(__dirname, "preload.cjs"), contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: !smoke, offscreen: smoke } });
+  if (packagedSmoke) startupTimer = setTimeout(() => { fs.writeFileSync(path.join(runtime, "packaged-smoke.json"), JSON.stringify({ ok: false, error: "Renderer startup timed out" })); app.exit(1); }, 30000);
+  win = new BrowserWindow({ show: !hidden, width: 1500, height: 1000, icon: path.join(__dirname, "..", "assets", "logo.png"), backgroundColor: "#0b0f17", webPreferences: { preload: path.join(__dirname, "preload.cjs"), contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: !hidden, offscreen: hidden } });
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.webContents.on("will-navigate", event => event.preventDefault());
   win.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
@@ -169,4 +204,4 @@ app.whenReady().then(async () => {
   }
 }).catch(error => { console.error(error); app.exit(1); });
 app.on("window-all-closed", () => app.quit());
-app.on("before-quit", () => { watcher.stop(); bridge.stop(); });
+app.on("before-quit", () => { clearTimeout(startupTimer); watcher.stop(); bridge.stop(); });

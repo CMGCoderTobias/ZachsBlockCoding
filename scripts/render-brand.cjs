@@ -1,0 +1,27 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const { Resvg } = require("@resvg/resvg-js");
+const root = path.resolve(__dirname, "..");
+const svg = fs.readFileSync(path.join(root, "assets", "logo.svg"), "utf8");
+const render = width => Buffer.from(new Resvg(svg, { fitTo: { mode: "width", value: width } }).render().asPng());
+fs.writeFileSync(path.join(root, "assets", "logo.png"), render(512));
+fs.writeFileSync(path.join(root, "vscode-extension", "icon.png"), render(128));
+const sizes = [16, 24, 32, 48, 64, 128, 256];
+const header = Buffer.alloc(6 + sizes.length * 16);
+header.writeUInt16LE(1, 2);
+header.writeUInt16LE(sizes.length, 4);
+const images = [];
+let offset = header.length;
+sizes.forEach((size, index) => {
+  const png = render(size);
+  const entry = 6 + index * 16;
+  header[entry] = header[entry + 1] = size === 256 ? 0 : size;
+  header.writeUInt16LE(1, entry + 4);
+  header.writeUInt16LE(32, entry + 6);
+  header.writeUInt32LE(png.length, entry + 8);
+  header.writeUInt32LE(offset, entry + 12);
+  images.push(png);
+  offset += png.length;
+});
+fs.writeFileSync(path.join(root, "assets", "icon.ico"), Buffer.concat([header, ...images]));
+console.log("Brand assets rendered.");

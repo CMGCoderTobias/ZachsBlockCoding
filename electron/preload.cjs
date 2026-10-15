@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("zbc", {
+  appInfo: () => ipcRenderer.invoke("zbc:app-info"),
+  startupReady: () => ipcRenderer.invoke("zbc:startup-ready"),
+  showConnector: () => ipcRenderer.invoke("zbc:connector"),
   openSource: () => ipcRenderer.invoke("zbc:open-source"),
   saveSource: payload => ipcRenderer.invoke("zbc:save-source", payload),
   readExternal: token => ipcRenderer.invoke("zbc:read-external", token),

@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "repository": "CMGCoderTobias/ZachsBlockCoding",
+  "appId": "zachsblockcoding",
+  "channel": "stable",
+  "updaterBaseUrl": "https://kosradio.com/security",
+  "privateKey": "../RebornUpdateAgent/private-keys/release-private.pem",
+  "versionSource": { "type": "json", "path": "../ZachsBlockCoding/package.json", "property": "version" },
+  "outputDirectory": "../ZachsBlockCoding/release-output/{version}",
+  "releaseNotes": "First Windows x64 desktop prototype. Editable JavaScript blocks, standalone editor, folder workspace, and paired VS Code connector. See bundled extension instructions. No Node.js installation required. Python and other platforms are not yet supported. The setup installer requires the Watchdog route to be deployed; the ZIP runs offline after extraction.",
+  "extraAssets": [
+    "../ZachsBlockCoding/release-output/{version}/ZachsBlockCoding-{version}-Setup.exe",
+    "../ZachsBlockCoding/releases/zachsblockcoding-connector-0.2.1.vsix",
+    "../ZachsBlockCoding/EXTENSION_INSTALL.txt"
+  ],
+  "packages": [{
+    "rid": "win-x64",
+    "sourceDirectory": "../ZachsBlockCoding/.release-build/{version}/win-unpacked",
+    "entryExecutable": "ZachsBlockCoding.exe",
+    "build": {
+      "command": "pwsh",
+      "arguments": ["-NoProfile", "-File", "../ZachsBlockCoding/scripts/Build-Windows.ps1", "-Version", "{version}", "-Config", "{configDir}/zachsblockcoding-release.windows.json"],
+      "workingDirectory": "{configDir}"
+    }
+  }]
+}

@@ -11,15 +11,20 @@
     "build": "vite build",
     "test": "node --test test/*.test.js",
     "test:ui": "electron . --smoke-test",
-    "package:connector": "node scripts/package-connector.cjs"
+    "package:connector": "node scripts/render-brand.cjs && node scripts/package-connector.cjs",
+    "package:windows": "pwsh -NoProfile -File scripts/Build-Windows.ps1",
+    "release:local": "pwsh -NoProfile -File scripts/Publish-Windows.ps1",
+    "release:publish": "pwsh -NoProfile -File scripts/Publish-Windows.ps1 -Publish"
   },
   "keywords": [],
   "author": "Zach",
   "license": "ISC",
   "description": "Blockly-based desktop app to generate real code (JS first, then Python).",
   "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
     "concurrently": "^9.2.1",
     "electron": "^41.6.1",
+    "electron-builder": "26.15.3",
     "vite": "^8.0.13",
     "wait-on": "^9.0.10"
   },

@@ -1,5 +1,17 @@
-Where we are - October 13, 2026
+Where we are - October 14, 2026
 ================================
+
+Desktop distribution update
+- Public GitHub repository: CMGCoderTobias/ZachsBlockCoding.
+- Windows x64 packaging, block-Z logo, RebornPublisher configuration in
+  Coding/config, and a bundled/separate connector 0.2.1 VSIX.
+- GitHub releases are the default; kosradio is the configured feed/bootstrap.
+- Local code verified with 31 regressions, 75 Electron UI checks, and 11 actual
+  VS Code host checks. VS Code also accepts the packaged 0.2.1 VSIX.
+- Production npm audit is clean after updating the transitive ws dependency.
+- Read FIRST_RELEASE.txt for storage, build steps and deployment limitations.
+- Site deployment is intentionally pending; local checks do not certify the
+  live installer/update route. No site changes were deployed from this task.
 
 Latest authoring update (supersedes connector 0.1.0 setup below)
 - Verified: 28 regression tests, 75 Electron UI checks, 11 real VS Code host
